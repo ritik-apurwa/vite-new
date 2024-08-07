@@ -26,6 +26,7 @@
   }
 }
 ```
+
 ### then update this tsconfig.app.json
 
 ```
@@ -54,6 +55,7 @@
   "include": ["src", "convex"]
 }
 ```
+
 ### then update this convex/clerk.ts
 
 ```
@@ -82,8 +84,10 @@ export const fulfill = internalAction({
 
 // https://docs.convex.dev/functions/internal-functions
 ```
+
 ### then update this convex/http.ts
-#### install svix and convex also 
+
+#### install svix and convex also
 
 ```
  import { httpRouter } from "convex/server";
@@ -144,4 +148,23 @@ http.route({
 });
 
 export default http;
+```
+
+### add this in convex/schema.ts
+
+```
+// schema.ts
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+export default defineSchema({
+  users: defineTable({
+    name: v.optional(v.string()),
+    email: v.string(),
+    image: v.string(),
+    tokenIdentifier: v.string(),
+    isOnline: v.boolean(),
+    isAdmin: v.optional(v.boolean()),
+  }).index("by_tokenIdentifier", ["tokenIdentifier"]),
+});
+
 ```
