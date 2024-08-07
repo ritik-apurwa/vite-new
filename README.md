@@ -5,9 +5,9 @@ This guide will walk you through setting up a new Vite project with TypeScript. 
 ## Step 1: Create a New Vite Project
 
 First, create a new Vite project. You can do this using the following command:
+### first create a vite project using this command
 
-```bash
-npm create vite@latest my-project --template react-ts
+````npm create vite@latest my-project --template react-ts ```
 cd my-project
 npm install
 
@@ -54,4 +54,5 @@ npm install
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
- 
+
+````
