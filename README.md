@@ -297,11 +297,10 @@ VITE_CONVEX_URL=https://jovial-wildebeest-467.convex.cloud
  # team: ritik-apurwa, project: project-4
 
  
-CLERK_APP_DOMAIN=devoted-gorilla-16.clerk.accounts.dev
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZGV2b3RlZC1nb3JpbGxhLTE2LmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_WPS7rLLnJ9P7x7DzgOjCZvH8TJK67HZYeKH2VpaUor
-CLERK_WEBHOOK_SECRET=whsec_DxHt/ooGCSRn2RQrfU11GhY7N+aY3e+E
-CLERK_APP_DOMAIN=devoted-gorilla-16.clerk.accounts.dev
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_.......
+CLERK_SECRET_KEY=sk_test_.......
+CLERK_WEBHOOK_SECRET=whsec_......
+CLERK_APP_DOMAIN=.......
 
 ```
 ### add this in app/layout.ts (if NextJs)
