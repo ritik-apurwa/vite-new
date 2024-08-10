@@ -6,7 +6,7 @@ npm create vite@latest ./
 
 ### then update this tsconfig.json
 
-```typescript
+```javascript
  {
   "files": [],
   "references": [
