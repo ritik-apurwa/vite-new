@@ -1,7 +1,6 @@
 ### first create a vite project using this command
 
-```
- npm create vite@latest ./
+```npm create vite@latest ./
 ```
 
 ### then update this tsconfig.json
@@ -26,6 +25,7 @@
   }
 }
 ```
+
 ### then update this tsconfig.app.json
 
 ```
@@ -55,14 +55,9 @@
 }
 ```
 
+### step-1 create convex/auth.config.ts
 
-
-
-
-
-###  step-1 create convex/auth.config.ts
-
-get this domain " ",  from clerk's Jwt token and copy and save setting 
+get this domain " ", from clerk's Jwt token and copy and save setting
 
 ```
  export default {
@@ -75,8 +70,7 @@ get this domain " ",  from clerk's Jwt token and copy and save setting
   };
 ```
 
-
-### step-2 and this convex/clerk.ts 
+### step-2 and this convex/clerk.ts
 
 ```
  "use node";
@@ -105,7 +99,7 @@ export const fulfill = internalAction({
 // https://docs.convex.dev/functions/internal-functions
 ```
 
-### step-3 add this  convex/http.ts
+### step-3 add this convex/http.ts
 
 ```
  import { httpRouter } from "convex/server";
@@ -186,6 +180,7 @@ export default defineSchema({
 });
 
 ```
+
 ### add this in convex/users.ts
 
 ```
@@ -222,7 +217,7 @@ http.route({
             image: result.data.image_url ?? "",
           });
           break;
-      
+
           break;
       }
 
@@ -241,6 +236,7 @@ http.route({
 export default http;
 
 ```
+
 ### add this in utlis/auth-status.ts
 
 ```
@@ -285,9 +281,10 @@ export function useStoreUserEffect() {
 }
 
 ```
+
 ### add this in convex/main.ts
 
-first two you will get in next js automatically if using react then you have to take it from convex secret keys and from there takes convexUrl and then set in clerk webhook endpoint and it will be .site/clerk after convex , till convex it will be same 
+first two you will get in next js automatically if using react then you have to take it from convex secret keys and from there takes convexUrl and then set in clerk webhook endpoint and it will be .site/clerk after convex , till convex it will be same
 
 ```
 CONVEX_DEPLOYMENT=dev:jovial-wildebeest-467
@@ -296,13 +293,14 @@ VITE_CONVEX_URL=https://jovial-wildebeest-467.convex.cloud
 
  # team: ritik-apurwa, project: project-4
 
- 
+
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_.......
 CLERK_SECRET_KEY=sk_test_.......
 CLERK_WEBHOOK_SECRET=whsec_......
 CLERK_APP_DOMAIN=.......
 
 ```
+
 ### add this in app/layout.ts (if NextJs)
 
 ```
@@ -317,7 +315,7 @@ const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL as strin
 
 const ConvexClerkProvider = ({ children }: { children: ReactNode }) => (
   <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY as string} appearance={{
-    layout: { 
+    layout: {
       socialButtonsVariant: 'iconButton',
       logoImageUrl: '/icons/auth-logo.svg'
     },
@@ -338,6 +336,7 @@ const ConvexClerkProvider = ({ children }: { children: ReactNode }) => (
 export default ConvexClerkProvider;
 
 ```
+
 ### add this this in your root of nextjs middleware.ts
 
 ```
@@ -355,6 +354,7 @@ export const config = {
 };
 
 ```
+
 ### add this in convex/main.ts
 
 ```
