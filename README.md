@@ -26,6 +26,20 @@
   }
 }
 ```
+###  step-1 create convex/auth.config.ts
+
+get this domain " ",  from clerk's Jwt token and copy and save setting 
+
+```
+ export default {
+    providers: [
+      {
+        domain: "https://devoted-gorilla-16.clerk.accounts.dev/",
+        applicationID: "convex",
+      },
+    ]
+  };
+```
 
 ### then update this tsconfig.app.json
 
