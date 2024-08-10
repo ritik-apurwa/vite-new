@@ -26,21 +26,6 @@
   }
 }
 ```
-###  step-1 create convex/auth.config.ts
-
-get this domain " ",  from clerk's Jwt token and copy and save setting 
-
-```
- export default {
-    providers: [
-      {
-        domain: "https://devoted-gorilla-16.clerk.accounts.dev/",
-        applicationID: "convex",
-      },
-    ]
-  };
-```
-
 ### then update this tsconfig.app.json
 
 ```
@@ -70,7 +55,28 @@ get this domain " ",  from clerk's Jwt token and copy and save setting
 }
 ```
 
-### then update this convex/clerk.ts
+
+
+
+
+
+###  step-1 create convex/auth.config.ts
+
+get this domain " ",  from clerk's Jwt token and copy and save setting 
+
+```
+ export default {
+    providers: [
+      {
+        domain: "https://devoted-gorilla-16.clerk.accounts.dev/",
+        applicationID: "convex",
+      },
+    ]
+  };
+```
+
+
+### step-2 and this convex/clerk.ts 
 
 ```
  "use node";
@@ -99,9 +105,7 @@ export const fulfill = internalAction({
 // https://docs.convex.dev/functions/internal-functions
 ```
 
-### then update this convex/http.ts
-
-#### install svix and convex also
+### step-3 add this  convex/http.ts
 
 ```
  import { httpRouter } from "convex/server";
