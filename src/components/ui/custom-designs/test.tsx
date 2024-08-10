@@ -2,8 +2,6 @@ import { useQuery } from "convex/react";
 import { Button } from "../button";
 import { SignInButton, SignOutButton } from "@clerk/clerk-react";
 import { api } from "@convex/_generated/api";
-import countapi from "countapi-js";
-import { useEffect, useState } from "react";
 
 import {
   Table,
@@ -18,7 +16,6 @@ import {
 
 const UserList = () => {
   // State to store the visit count
- 
 
   // Get total users
   const totalUsers = useQuery(api.users.getAll);
@@ -27,9 +24,6 @@ const UserList = () => {
 
   return (
     <section className="container mx-auto px-4 py-8">
-    
-
-     
       <div className="flex justify-center space-x-4 mb-8">
         <Button
           asChild
