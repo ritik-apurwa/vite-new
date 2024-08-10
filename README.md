@@ -189,160 +189,56 @@ export default defineSchema({
 ### add this in convex/users.ts
 
 ```
-// users.ts
-import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
+import { internal } from "./_generated/api";
 
-export const getAll = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("users").collect();
-  },
-});
+const http = httpRouter();
 
-export const upsertUser = internalMutation({
-  args: {
-    tokenIdentifier: v.string(),
-    email: v.string(),
-    name: v.string(),
-    image: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
-
-    if (existingUser) {
-      // Update existing user
-      await ctx.db.patch(existingUser._id, {
-        name: args.name,
-        email: args.email,
-        image: args.image,
-        isOnline: true,
-      });
-      return { userId: existingUser._id, isAdmin: existingUser.isAdmin };
-    } else {
-      // Create new user
-      const userId = await ctx.db.insert("users", {
-        tokenIdentifier: args.tokenIdentifier,
-        email: args.email,
-        name: args.name,
-        image: args.image,
-        isOnline: true,
-        isAdmin: false, // Default new users to non-admin
-      });
-      return { userId, isAdmin: false };
-    }
-  },
-});
-
-export const updateUser = internalMutation({
-  args: { tokenIdentifier: v.string(), image: v.string() },
-  async handler(ctx, args) {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
-
-    if (!user) {
-      throw new ConvexError("User not found");
-    }
-
-    await ctx.db.patch(user._id, {
-      image: args.image,
-    });
-  },
-});
-
-export const setUserOnline = internalMutation({
-  args: { tokenIdentifier: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
-
-    if (!user) {
-      throw new ConvexError("User not found");
-    }
-
-    await ctx.db.patch(user._id, { isOnline: true });
-  },
-});
-
-export const setUserOffline = internalMutation({
-  args: { tokenIdentifier: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
-
-    if (!user) {
-      throw new ConvexError("User not found");
-    }
-
-    await ctx.db.patch(user._id, { isOnline: false });
-  },
-});
-
-export const store = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Called storeUser without authentication present");
-    }
+http.route({
+  path: "/clerk",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    const payloadString = await req.text();
+    const headerPayload = req.headers;
 
     try {
-      // Wrap the logic in a transaction to avoid race conditions
-      const existingUser = await ctx.db
-        .query("users")
-        .withIndex("by_tokenIdentifier", (q) =>
-          q.eq("tokenIdentifier", identity.tokenIdentifier)
-        )
-        .unique();
+      const result = await ctx.runAction(internal.clerk.fulfill, {
+        payload: payloadString,
+        headers: {
+          "svix-id": headerPayload.get("svix-id")!,
+          "svix-signature": headerPayload.get("svix-signature")!,
+          "svix-timestamp": headerPayload.get("svix-timestamp")!,
+        },
+      });
 
-      if (existingUser) {
-        // Update existing user
-        await ctx.db.patch(existingUser._id, {
-          name: identity.name ?? existingUser.name,
-          email: identity.email ?? existingUser.email,
-          image: identity.pictureUrl ?? existingUser.image,
-          isOnline: true,
-        });
-        return { userId: existingUser._id, isAdmin: existingUser.isAdmin };
-      } else {
-        // Create new user
-        const userId = await ctx.db.insert("users", {
-          tokenIdentifier: identity.tokenIdentifier,
-          email: identity.email ?? "",
-          name: identity.name ?? "",
-          image: identity.pictureUrl ?? "",
-          isOnline: true,
-          isAdmin: false, // Default new users to non-admin
-        });
-        return { userId, isAdmin: false };
+      switch (result.type) {
+        case "user.created":
+        case "user.updated":
+          await ctx.runMutation(internal.users.upsertUser, {
+            tokenIdentifier: `${process.env.CLERK_APP_DOMAIN}|${result.data.id}`,
+            email: result.data.email_addresses[0]?.email_address ?? "",
+            name: `${result.data.first_name ?? "Guest"} ${result.data.last_name ?? ""}`,
+            image: result.data.image_url ?? "",
+          });
+          break;
+      
+          break;
       }
+
+      return new Response(null, {
+        status: 200,
+      });
     } catch (error) {
-      // Handle potential errors, such as uniqueness constraint violations
-      console.error("Error storing user:", error);
-      throw new Error("Failed to store user");
+      console.log("Webhook Error🔥🔥", error);
+      return new Response("Webhook Error", {
+        status: 400,
+      });
     }
-  },
+  }),
 });
 
-export function isAdmin(user: any): boolean {
-  return user?.isAdmin ?? false;
-}
+export default http;
 
 ```
 ### add this in utlis/auth-status.ts
@@ -387,6 +283,77 @@ export function useStoreUserEffect() {
     isAdmin,
   };
 }
+
+```
+### add this in convex/main.ts
+
+first two you will get in next js automatically if using react then you have to take it from convex secret keys and from there takes convexUrl and then set in clerk webhook endpoint and it will be .site/clerk after convex , till convex it will be same 
+
+```
+CONVEX_DEPLOYMENT=dev:jovial-wildebeest-467
+VITE_CONVEX_URL=https://jovial-wildebeest-467.convex.cloud
+
+
+ # team: ritik-apurwa, project: project-4
+
+ 
+CLERK_APP_DOMAIN=devoted-gorilla-16.clerk.accounts.dev
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZGV2b3RlZC1nb3JpbGxhLTE2LmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_SECRET_KEY=sk_test_WPS7rLLnJ9P7x7DzgOjCZvH8TJK67HZYeKH2VpaUor
+CLERK_WEBHOOK_SECRET=whsec_DxHt/ooGCSRn2RQrfU11GhY7N+aY3e+E
+CLERK_APP_DOMAIN=devoted-gorilla-16.clerk.accounts.dev
+
+```
+### add this in app/layout.ts (if NextJs)
+
+```
+"use client";
+
+import { ClerkProvider, useAuth } from "@clerk/nextjs";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexReactClient } from "convex/react";
+import { ReactNode } from "react";
+
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL as string);
+
+const ConvexClerkProvider = ({ children }: { children: ReactNode }) => (
+  <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY as string} appearance={{
+    layout: { 
+      socialButtonsVariant: 'iconButton',
+      logoImageUrl: '/icons/auth-logo.svg'
+    },
+    // variables: {
+    //   colorBackground: '#15171c',
+    //   colorPrimary: '',
+    //   colorText: 'white',
+    //   colorInputBackground: '#1b1f29',
+    //   colorInputText: 'white',
+    // }
+  }}>
+    <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+      {children}
+    </ConvexProviderWithClerk>
+  </ClerkProvider>
+);
+
+export default ConvexClerkProvider;
+
+```
+### add this this in your root of nextjs middleware.ts
+
+```
+import { clerkMiddleware } from "@clerk/nextjs/server";
+
+export default clerkMiddleware();
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};
 
 ```
 ### add this in convex/main.ts

@@ -17,28 +17,25 @@ export const upsertUser = internalMutation({
   handler: async (ctx, args) => {
     const existingUser = await ctx.db
       .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .unique();
+
+    const lastSignIn = new Date().toISOString();
 
     if (existingUser) {
       // Update existing user
       await ctx.db.patch(existingUser._id, {
         name: args.name,
-        email: args.email,
         image: args.image,
-        isOnline: true,
+        tokenIdentifier: args.tokenIdentifier,
+        lastSignIn,
       });
       return { userId: existingUser._id, isAdmin: existingUser.isAdmin };
     } else {
       // Create new user
       const userId = await ctx.db.insert("users", {
-        tokenIdentifier: args.tokenIdentifier,
-        email: args.email,
-        name: args.name,
-        image: args.image,
-        isOnline: true,
+        ...args,
+        lastSignIn,
         isAdmin: false, // Default new users to non-admin
       });
       return { userId, isAdmin: false };
@@ -47,13 +44,11 @@ export const upsertUser = internalMutation({
 });
 
 export const updateUser = internalMutation({
-  args: { tokenIdentifier: v.string(), image: v.string() },
+  args: { email: v.string(), image: v.string() },
   async handler(ctx, args) {
     const user = await ctx.db
       .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .unique();
 
     if (!user) {
@@ -66,42 +61,6 @@ export const updateUser = internalMutation({
   },
 });
 
-export const setUserOnline = internalMutation({
-  args: { tokenIdentifier: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
-
-    if (!user) {
-      throw new ConvexError("User not found");
-    }
-
-    await ctx.db.patch(user._id, { isOnline: true });
-  },
-});
-
-export const setUserOffline = internalMutation({
-  args: { tokenIdentifier: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
-
-    if (!user) {
-      throw new ConvexError("User not found");
-    }
-
-    await ctx.db.patch(user._id, { isOnline: false });
-  },
-});
-
 export const store = mutation({
   args: {},
   handler: async (ctx) => {
@@ -110,44 +69,50 @@ export const store = mutation({
       throw new Error("Called storeUser without authentication present");
     }
 
-    try {
-      // Wrap the logic in a transaction to avoid race conditions
-      const existingUser = await ctx.db
-        .query("users")
-        .withIndex("by_tokenIdentifier", (q) =>
-          q.eq("tokenIdentifier", identity.tokenIdentifier)
-        )
-        .unique();
+    const email = identity.email;
+    if (!email) {
+      throw new Error("User has no email");
+    }
 
-      if (existingUser) {
-        // Update existing user
-        await ctx.db.patch(existingUser._id, {
-          name: identity.name ?? existingUser.name,
-          email: identity.email ?? existingUser.email,
-          image: identity.pictureUrl ?? existingUser.image,
-          isOnline: true,
-        });
-        return { userId: existingUser._id, isAdmin: existingUser.isAdmin };
-      } else {
-        // Create new user
-        const userId = await ctx.db.insert("users", {
-          tokenIdentifier: identity.tokenIdentifier,
-          email: identity.email ?? "",
-          name: identity.name ?? "",
-          image: identity.pictureUrl ?? "",
-          isOnline: true,
-          isAdmin: false, // Default new users to non-admin
-        });
-        return { userId, isAdmin: false };
-      }
-    } catch (error) {
-      // Handle potential errors, such as uniqueness constraint violations
-      console.error("Error storing user:", error);
-      throw new Error("Failed to store user");
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .unique();
+
+    const lastSignIn = new Date().toISOString();
+
+    if (existingUser) {
+      // Update existing user
+      await ctx.db.patch(existingUser._id, {
+        tokenIdentifier: identity.tokenIdentifier,
+        name: identity.name ?? existingUser.name,
+        image: identity.pictureUrl ?? existingUser.image,
+        lastSignIn,
+      });
+      return { userId: existingUser._id, isAdmin: existingUser.isAdmin };
+    } else {
+      // Create new user
+      const userId = await ctx.db.insert("users", {
+        tokenIdentifier: identity.tokenIdentifier,
+        email,
+        name: identity.name ?? "",
+        image: identity.pictureUrl ?? "",
+        isAdmin: false,
+        lastSignIn,
+      });
+      return { userId, isAdmin: false };
     }
   },
 });
 
-export function isAdmin(user: any): boolean {
-  return user?.isAdmin ?? false;
-}
+export const isAdmin = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .unique();
+    
+    return user?.isAdmin ?? false;
+  },
+});
