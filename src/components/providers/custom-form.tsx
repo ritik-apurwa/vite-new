@@ -9,12 +9,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../form";
-import { Input } from "../input";
-import { Textarea } from "../textarea";
-import { Checkbox } from "../checkbox";
-import { Label } from "../label";
-import { Select, SelectContent, SelectTrigger, SelectValue } from "../select";
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export enum FormType {
   INPUT = "input",
@@ -37,6 +42,7 @@ interface FormProps {
   children?: React.ReactNode;
   renderSkeleton?: (field: any) => React.ReactNode;
   formType: FormType;
+  className?: string;
 }
 
 const RenderInput = ({ field, props }: { field: any; props: FormProps }) => {
@@ -100,7 +106,7 @@ const RenderInput = ({ field, props }: { field: any; props: FormProps }) => {
           <Textarea
             placeholder={props.placeholder}
             {...field}
-            className="w-full p-2 border rounded-md"
+            className={props.className}
           />
         </FormControl>
       );

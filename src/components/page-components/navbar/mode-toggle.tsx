@@ -1,14 +1,12 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { RiMoonClearFill, RiSunFill } from "react-icons/ri";
-
 import { FaGithub, FaLinkedin } from "react-icons/fa6";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
-
-import { useTheme } from "../providers/theme-provider";
-import { Button } from "../button";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/providers/theme-provider";
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
@@ -27,7 +25,7 @@ export function ModeToggle() {
   };
 
   return (
-    <section className="flex items-center flex-row space-x-4">
+    <section className="flex items-center flex-row px-10 border-2 lg:border-none lg:py-0 lg:px-0 py-3 justify-between space-x-4">
       <Button asChild variant="outline" size="icon" className="size-8">
         <Link to="https://github.com/ritik-apurwa">
           <FaGithub />
@@ -59,7 +57,7 @@ export function ModeToggle() {
       <Unauthenticated>
         <Button
           asChild
-          variant="outline"
+          variant="default"
           size="icon"
           className="w-14 h-8 text-xs"
         >

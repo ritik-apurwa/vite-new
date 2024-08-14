@@ -3,10 +3,9 @@ import { Loader2, Upload, X } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useUploadFiles } from "@xixixao/uploadstuff/react";
 import { Id } from "@convex/_generated/dataModel";
-import { useToast } from "../use-toast";
 import { api } from "@convex/_generated/api";
-import { Button } from "../button";
-import { Input } from "../input";
+import { useToast } from "../ui/use-toast";
+
 
 
 
