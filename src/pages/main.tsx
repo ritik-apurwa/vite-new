@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ClerkProvider publishableKey="pk_test_ZGV2b3RlZC1nb3JpbGxhLTE2LmNsZXJrLmFjY291bnRzLmRldiQ">
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      <BrowserRouter basename="/subdirectory">
+      <BrowserRouter>
           <App />
         </BrowserRouter>
       </ConvexProviderWithClerk>
