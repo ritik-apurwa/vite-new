@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PasskeyModal } from "@/components/providers/passkey-modal"; // Ensure this path is correct
 import Admin from "./admin/admin";
 import { Toaster } from "@/components/ui/toaster";
-import { HashRouter as Routes } from "react-router-dom";
+import { Routes } from "react-router-dom";
 
 function App() {
   return (

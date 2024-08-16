@@ -5,7 +5,7 @@ import "../style/index.css";
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
-import {BrowserRouter} from "react-router-dom";
+import {HashRouter as BrowserRouter} from "react-router-dom";
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
