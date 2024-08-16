@@ -4,11 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "@/components/ui/button";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { IconType } from "react-icons";
 import { MdHomeMax } from "react-icons/md";
-import { GoPerson } from "react-icons/go";
 import { TbLogicNand } from "react-icons/tb";
 import { PiContactlessPaymentBold } from "react-icons/pi";
 import { Logo } from "@/assets/icons";
@@ -22,7 +20,6 @@ interface NavLinks {
 
 const navLinks: NavLinks[] = [
   { id: 1, label: "Home", path: "/", icon: MdHomeMax },
-  { id: 2, label: "About", path: "/about", icon: GoPerson },
   { id: 3, label: "Snippets", path: "/snippets", icon: FaCodeCommit },
   { id: 4, label: "Blog", path: "/blogs", icon: TbLogicNand },
   { id: 5, label: "Contact", path: "/contact", icon: PiContactlessPaymentBold },
@@ -34,7 +31,7 @@ const NavigationCard = ({ icon: Icon, label, path }: NavLinks) => {
       to={path}
       className="flex items-center space-x-2 p-2 text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white"
     >
-      <Icon className="text-lg" />
+      <Icon className="text-lg text-indigo-600" />
       <span>{label}</span>
     </Link>
   );

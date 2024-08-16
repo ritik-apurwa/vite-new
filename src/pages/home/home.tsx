@@ -2,12 +2,14 @@ import { Button } from "@/components/ui/button";
 import { SignInButton } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 import UiShowCase from "./ui-showcase";
+import Skills from "./skills";
 
 const Home = () => {
   return (
     <>
       <Intro />
       <UiShowCase />
+      <Skills/>
     </>
   );
 };

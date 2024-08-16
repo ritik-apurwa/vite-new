@@ -1,4 +1,3 @@
-import { Id } from "@convex/_generated/dataModel";
 import { z } from "zod";
 
 export type languageTypes =
@@ -40,7 +39,7 @@ export const blogSchemaZod = z.object({
   title: z
     .string()
     .min(5, "Title must be at least 5 characters long")
-    .max(150, "Title should not exceed 50 characters"),
+    .max(150, "Title should not exceed 150 characters"),
   content: z
     .string()
     .min(50, "Content must be at least 50 characters long")
@@ -49,5 +48,15 @@ export const blogSchemaZod = z.object({
     .string()
     .min(3, "Author name must be at least 3 characters long")
     .max(50, "Author name should not exceed 50 characters"),
+  category: z
+    .string()
+    .min(1, "Category must be selected"),
+  images: z.array(
+    z.object({
+      url: z.string().url("Invalid image URL"),
+      storageId: z.string()
+    })
+  ).optional(),
   published: z.boolean(),
 });
+export type BlogFormData = z.infer<typeof blogSchemaZod>;

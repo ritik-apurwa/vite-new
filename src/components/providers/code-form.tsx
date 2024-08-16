@@ -154,7 +154,7 @@ const CodeForm: React.FC<CodeControlProps> = ({ type, initialData }) => {
                 type="button"
                 onClick={() => append({ fileName: "", code: "", language: "" })}
               >
-                Add File
+                Add One More
               </Button>
             </>
           )}

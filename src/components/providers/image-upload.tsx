@@ -5,10 +5,8 @@ import { useUploadFiles } from "@xixixao/uploadstuff/react";
 import { Id } from "@convex/_generated/dataModel";
 import { api } from "@convex/_generated/api";
 import { useToast } from "../ui/use-toast";
-
-
-
-
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 export interface UploadImagesProps {
   setImages: Dispatch<SetStateAction<string[]>>;
@@ -25,9 +23,9 @@ const UploadImages = ({
   const [uploadProgress, setUploadProgress] = useState(0); // State to track upload progress
   const imageRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const generateUploadUrl = useMutation(api..);
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const { startUpload } = useUploadFiles(generateUploadUrl);
-  const getImageUrl = useMutation(api..getUrl);
+  const getImageUrl = useMutation(api.blogs.getUrl);
 
   const handleImage = async (blobs: Blob[], fileNames: string[]) => {
     setIsImageLoading(true);
@@ -40,30 +38,40 @@ const UploadImages = ({
       console.log("Files prepared for upload:", files);
 
       let totalProgress = 0;
-      const uploadPromises = files.map((file, index) => {
-        return startUpload([file]).then((uploaded) => {
-          console.log("File uploaded:", uploaded);
+      const uploadPromises = files.map((file) => {
+        return startUpload([file])
+          .then((uploaded) => {
+            console.log("File uploaded:", uploaded);
 
-          const storageId = (uploaded[0].response as any).storageId;
-          console.log("Storage ID obtained:", storageId);
+            const storageId = (uploaded[0].response as any).storageId;
+            console.log("Storage ID obtained:", storageId);
 
-          return getImageUrl({ storageId }).then((url) => {
-            console.log("Image URL obtained:", url);
-            return { url, storageId };
+            return getImageUrl({ storageId }).then((url) => {
+              console.log("Image URL obtained:", url);
+              return { url, storageId };
+            });
+          })
+          .finally(() => {
+            totalProgress += (1 / files.length) * 100;
+            setUploadProgress(totalProgress);
           });
-        }).finally(() => {
-          totalProgress += 1 / files.length * 100;
-          setUploadProgress(totalProgress);
-        });
       });
 
       const results = await Promise.all(uploadPromises);
-      const validResults = results.filter(result => result.url !== null);
-      const storageIds = validResults.map(result => result.storageId);
-      const validImageUrls = validResults.map(result => result.url as string);
+      const validResults = results.filter((result) => result.url !== null);
+      const storageIds = validResults.map((result) => result.storageId);
+      const validImageUrls = validResults.map((result) => result.url as string);
 
-      setImageStorageIds((prevIds) => (Array.isArray(prevIds) ? [...prevIds, ...storageIds].slice(0, 4) : storageIds.slice(0, 4)));
-      setImages((prevImages) => (Array.isArray(prevImages) ? [...prevImages, ...validImageUrls].slice(0, 4) : validImageUrls.slice(0, 4)));
+      setImageStorageIds((prevIds) =>
+        Array.isArray(prevIds)
+          ? [...prevIds, ...storageIds].slice(0, 4)
+          : storageIds.slice(0, 4)
+      );
+      setImages((prevImages) =>
+        Array.isArray(prevImages)
+          ? [...prevImages, ...validImageUrls].slice(0, 4)
+          : validImageUrls.slice(0, 4)
+      );
       console.log("Updated image URLs state:", validImageUrls);
 
       toast({
@@ -113,7 +121,7 @@ const UploadImages = ({
           key={index}
           className="relative w-32 h-32 border border-gray-300 rounded-lg overflow-hidden group"
         >
-          <img 
+          <img
             height={100}
             width={100}
             src={image}

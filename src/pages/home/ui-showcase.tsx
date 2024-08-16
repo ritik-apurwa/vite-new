@@ -52,7 +52,8 @@ const Header = () => {
 
 const UiShowCase = () => {
   return (
-    <section className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 sm:p-8 max-w-7xl mx-auto min-h-screen dark:bg-zinc-900/60 bg-zinc-100/40 text-foreground">
+   <div className="dark:bg-zinc-900/50">
+     <section className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 sm:p-8 max-w-7xl mx-auto min-h-screen  text-foreground">
       <div className="col-span-full mb-8">
         <Header />
       </div>
@@ -75,6 +76,7 @@ const UiShowCase = () => {
         <CreateNewBoard />
       </div>
     </section>
+   </div>
   );
 };
 

@@ -14,5 +14,9 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
+    "no-undef": [ // Adjust the rule name if needed
+      "error",
+      { "typeof": ["ctx"] } // Allow the "ctx" variable
+    ]
   },
 }

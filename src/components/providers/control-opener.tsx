@@ -11,7 +11,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Loader } from "lucide-react";
 import { IoCreateOutline } from "react-icons/io5";
 import { LiaEdit } from "react-icons/lia";
 import { AiOutlineDelete } from "react-icons/ai";

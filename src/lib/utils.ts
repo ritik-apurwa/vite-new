@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx"
+import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -31,4 +32,20 @@ export const convertToIST = (timestamp: number) => {
 
   // Format the date using Intl.DateTimeFormat
   return new Intl.DateTimeFormat("en-IN", options).format(date);
+};
+
+export const useDebounce = <T,>(value: T, delay = 500): T => {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 };

@@ -1,4 +1,17 @@
-import React from "react";
+import chatgpt from "../skillspng/chatgpt.png"
+import googlegemini from "../skillspng/gemini.png"
+import notion from "../skillspng/Notion.png"
+import claude from "../skillspng/claude.png"
+import clerk from "../skillspng/clerk.jpg"
+import convexlight from "../skillspng/convex-light.svg"
+import convexdark from "../skillspng/convex-dark.svg"
+import nextjs from "../skillspng/nextjs.png"
+import reacticon from "../skillspng/react.webp"
+import tailwind from "../skillspng/tailwind.png"
+import convexpng from "../skillspng/convex.png"
+
+export {chatgpt,convexpng,  googlegemini, nextjs,notion, claude, clerk, convexdark, convexlight , reacticon, tailwind}
+
 
 export function Logo() {
   return (
