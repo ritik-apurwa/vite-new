@@ -9,8 +9,7 @@ import CustomForm, { FormType } from "@/components/providers/custom-form";
 import { BlogFormData, blogSchemaZod } from "@/types";
 import OpenFormButton from "./control-opener";
 import { SelectItem } from "../ui/select";
-import UploadImages from "./image-upload";
-
+import UploadImage from "./uploadImage/upload-image";
 
 interface BlogControlProps {
   initialData?: Id<"blogs">;
@@ -19,8 +18,9 @@ interface BlogControlProps {
 
 const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
   const [, setIsSubmitting] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
-  const [imageStorageIds, setImageStorageIds] = useState<Id<"_storage">[]>([]);
+  const [images, setImages] = useState<
+    { url: string; storageId: Id<"_storage"> }[]
+  >([]);
 
   const form = useForm<BlogFormData>({
     resolver: zodResolver(blogSchemaZod),
@@ -30,48 +30,43 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
       author: "",
       category: "",
       published: false,
-      images: [],
     },
   });
 
-  const createBlog = useMutation(api.blogs.create);
-  const updateBlog = useMutation(api.blogs.update);
-  const deleteBlog = useMutation(api.blogs.deleteBlog);
+  const createBlog = useMutation(api.blogs.CreateBlog);
+  const updateBlog = useMutation(api.blogs.UpdateBlog);
+  const deleteBlog = useMutation(api.blogs.DeleteBlog);
   const getBlog = useQuery(
-    api.blogs.getBlog,
+    api.blogs.GetBlogID,
     initialData ? { id: initialData } : "skip"
   );
 
   useEffect(() => {
     if (getBlog && type !== "create") {
       form.reset(getBlog);
-      setImages(getBlog.images.map(img => img.url));
-      setImageStorageIds(getBlog.images.map(img => img.storageId));
+      setImages(getBlog.images);
     }
   }, [getBlog, form, type]);
 
   const handleSubmit = async (values: BlogFormData) => {
     setIsSubmitting(true);
     try {
-      const imageData = images.map((url, index) => ({
-        url,
-        storageId: imageStorageIds[index],
-      }));
-
       if (type === "create") {
-        await createBlog({ ...values, images: imageData });
+        await createBlog({ ...values, images });
       } else if (type === "update" && initialData) {
-        await updateBlog({ id: initialData, ...values, images: imageData });
+        await updateBlog({ id: initialData, ...values, images });
       } else if (type === "delete" && initialData) {
-        await deleteBlog({ blogId: initialData });
+        await deleteBlog({ id: initialData });
       }
       form.reset();
       setImages([]);
-      setImageStorageIds([]);
+      return true; // Indicate successful submission
     } catch (error) {
       console.error(`Error ${type}ing blog:`, error);
+      return false; // Indicate failed submission
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -79,11 +74,16 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
       type={type}
       buttonName="Blog"
       formHeader="Blog Form"
-      onSubmit={form.handleSubmit(handleSubmit)}
+      isValid={form.formState.isValid} // Pass form validity
+      isSubmitting={form.formState.isSubmitting} // Pass submission state
+      onSubmit={async () => {
+        const isValid = await form.trigger();
+        if (!isValid) return false;
+        return handleSubmit(form.getValues());
+      }}
       onCancel={() => {
         form.reset();
         setImages([]);
-        setImageStorageIds([]);
       }}
     >
       <Form {...form}>
@@ -122,7 +122,7 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
                 <SelectItem value="typescript">TypeScript</SelectItem>
                 <SelectItem value="python">Python</SelectItem>
                 <SelectItem value="java">Java</SelectItem>
-                <SelectItem value="java">Travel</SelectItem>
+                <SelectItem value="travel">Travel</SelectItem>
               </CustomForm>
               <CustomForm
                 control={form.control}
@@ -130,11 +130,7 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
                 label="Published"
                 formType={FormType.CHECKBOX}
               />
-              <UploadImages
-                setImages={setImages}
-                setImageStorageIds={setImageStorageIds}
-                images={images}
-              />
+              <UploadImage initialImages={images} onImageUpdate={setImages} />
             </>
           )}
         </form>

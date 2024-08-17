@@ -45,42 +45,41 @@ export const frontendSkills: SkillCardProps[] = [
     description:
       "A versatile tool for note-taking, project management, and collaboration, streamlining your workflow with customizable templates and integrations.",
   },
-];
-
-export const mainSkills: SkillCardProps[] = [
   {
-    id: 1,
+    id: 5,
     title: "React",
     img: reacticon,
     description:
       "A popular JavaScript library for building user interfaces, known for its component-based architecture and virtual DOM.",
   },
   {
-    id: 2,
+    id: 6,
     title: "Next.js",
     img: nextjs,
     description:
       "A powerful React framework for building server-rendered applications, offering features like static site generation, API routes, and more.",
   },
   {
-    id: 3,
+    id: 7,
     title: "Tailwind CSS",
     img: tailwind,
     description:
       "A utility-first CSS framework that allows for rapid UI development with minimal custom CSS, promoting consistency and scalability.",
   },
   {
-    id: 4,
+    id: 8,
     title: "Convex",
     img: convexpng,
     description:
       "A modern platform for building real-time web applications, simplifying data synchronization and state management across devices.",
   },
   {
-    id: 5,
+    id: 9,
     title: "Clerk",
     img: clerk,
     description:
       "A modern platform for Authetication  for real-time web applications, simplifying data synchronization and state management across devices.",
   },
 ];
+
+

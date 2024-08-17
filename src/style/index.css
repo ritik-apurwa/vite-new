@@ -1,16 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap");
+.noto-sans {
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
 .header-shadow {
-  box-shadow: -10px 14px 4px -4px rgba(0, 100, 100, 1) ;
+  box-shadow: -10px 14px 4px -4px rgba(0, 100, 100, 1);
   color: 220 13% 91%;
 }
 
-.skills-g{
-  background: rgb(19,19,19);
-background: radial-gradient(circle, rgba(19,19,19,1) 0%, rgba(26,32,43,1) 39%, rgba(5,5,13,1) 59%, rgba(14,13,13,1) 100%);
+.skills-g {
+  background: rgb(19, 19, 19);
+  background: radial-gradient(
+    circle,
+    rgba(19, 19, 19, 1) 0%,
+    rgba(26, 32, 43, 1) 39%,
+    rgba(5, 5, 13, 1) 59%,
+    rgba(14, 13, 13, 1) 100%
+  );
 }
 
 @layer base {
@@ -70,6 +84,12 @@ background: radial-gradient(circle, rgba(19,19,19,1) 0%, rgba(26,32,43,1) 39%, r
   }
 }
 
+.t-text {
+  font-weight: 900;
+  line-height: 1em;
+  color: transparent;
+  -webkit-text-stroke: 1px #ffffff;
+}
 
 @layer base {
   * {

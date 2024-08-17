@@ -52,7 +52,7 @@ const AutoScrollComponent: React.FC<PropType> = ({
     <div className="overflow-hidden" ref={emblaRef}>
       <div className="flex">
         {slides.map((slide, index) => (
-          <div key={index} className="flex-[0_0_50%] min-w-0">
+          <div key={index} className="flex-[0_0_20%] min-w-0">
             {slide}
           </div>
         ))}

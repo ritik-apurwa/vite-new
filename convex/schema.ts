@@ -13,7 +13,7 @@ const codes = defineTable({
   category: v.string(),
 });
 
-export const blogsSchema = defineTable({
+const blogs = defineTable({
   title: v.string(),
   content: v.string(),
   author: v.string(),
@@ -25,6 +25,13 @@ export const blogsSchema = defineTable({
     })
   ),
   published: v.boolean(),
+});
+
+const contactSchema = defineTable({
+  name: v.string(),
+  email: v.string(),
+  message: v.string(),
+  // Store the timestamp as an ISO string
 });
 
 export default defineSchema({
@@ -42,8 +49,14 @@ export default defineSchema({
     .searchIndex("search_code_title", { searchField: "title" })
     .searchIndex("search_code_category", { searchField: "category" })
     .searchIndex("search_code_body", { searchField: "file" }),
-  blogs: blogsSchema
+  blogs: blogs
     .searchIndex("search_author", { searchField: "author" })
     .searchIndex("search_title", { searchField: "title" })
     .searchIndex("search_body", { searchField: "content" }),
+  contacts: contactSchema
+    .searchIndex("search_contact_name", {
+      searchField: "name",
+    })
+    .searchIndex("search_contact_email", { searchField: "email" })
+    .searchIndex("search_contact_body", { searchField: "message" }),
 });

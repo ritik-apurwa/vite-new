@@ -5,8 +5,7 @@ import { query } from "./_generated/server";
 import { mutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 
-
-export const getUrl = mutation({
+export const GetStorageId = mutation({
   args: {
     storageId: v.id("_storage"),
   },
@@ -15,15 +14,14 @@ export const getUrl = mutation({
   },
 });
 
-
-export const getBlogs = query({
+export const GetAllBlogs = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("blogs").collect();
   },
 });
 
-export const getBlogByTitle = query({
+export const GetBlogByTitle = query({
   args: {
     blogId: v.id("blogs"),
   },
@@ -42,7 +40,90 @@ export const getBlogByTitle = query({
   },
 });
 
-export const getBlogBySearch = query({
+export const CreateBlog = mutation({
+  args: {
+    title: v.string(),
+    content: v.string(),
+    author: v.string(),
+    category: v.string(),
+    published: v.boolean(),
+    images: v.array(
+      v.object({
+        url: v.string(),
+        storageId: v.id("_storage"),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const newBlog = await ctx.db.insert("blogs", args);
+    return newBlog;
+  },
+});
+
+export const UpdateBlog = mutation({
+  args: {
+    id: v.id("blogs"),
+    title: v.string(),
+    content: v.string(),
+    author: v.string(),
+    category: v.string(),
+    published: v.boolean(),
+    images: v.array(
+      v.object({
+        url: v.string(),
+        storageId: v.id("_storage"),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updateData } = args;
+    const existingBlog = await ctx.db.get(id);
+    if (!existingBlog) {
+      throw new Error("Blog not found");
+    }
+
+    // Delete removed images from storage
+    const removedImages = existingBlog.images.filter(
+      (oldImage) =>
+        !args.images.some(
+          (newImage) => newImage.storageId === oldImage.storageId
+        )
+    );
+    for (const image of removedImages) {
+      await ctx.storage.delete(image.storageId);
+    }
+
+    await ctx.db.replace(id, updateData);
+  },
+});
+
+export const DeleteBlog = mutation({
+  args: {
+    id: v.id("blogs"),
+  },
+  handler: async (ctx, args) => {
+    const blog = await ctx.db.get(args.id);
+    if (!blog) {
+      throw new Error("Blog not found");
+    }
+
+    // Delete associated images from storage
+    for (const image of blog.images) {
+      await ctx.storage.delete(image.storageId);
+    }
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const DeleteBlogImage = mutation({
+  args: { storageId: v.id("_storage") },
+  handler: async (ctx, args) => {
+    await ctx.storage.delete(args.storageId);
+  },
+});
+
+export const SearchBlogsQuery = query({
   args: {
     search: v.string(),
   },
@@ -58,6 +139,7 @@ export const getBlogBySearch = query({
     if (authorSearch.length > 0) {
       return authorSearch;
     }
+
     const titleSearch = await ctx.db
       .query("blogs")
       .withSearchIndex("search_title", (q) => q.search("title", args.search))
@@ -75,97 +157,7 @@ export const getBlogBySearch = query({
   },
 });
 
-export const create = mutation({
-  args: {
-    title: v.string(),
-    content: v.string(),
-    author: v.string(),
-    published: v.boolean(),
-    category:v.string(), 
-    images: v.array(
-      v.object({
-        url: v.string(),
-        storageId: v.id("_storage"),
-      })
-    ),
-  },
-  handler: async (ctx, args) => {
-    const newBlog = await ctx.db.insert("blogs", args);
-    return newBlog;
-  },
-});
-
-export const deleteBlog = mutation({
-  args: {
-    blogId: v.id("blogs"),
-  },
-  handler: async (ctx, args) => {
-    const blog = await ctx.db.get(args.blogId);
-    if (!blog) {
-      throw new Error("Blog not found");
-    }
-    // Delete associated images from storage
-    for (const image of blog.images) {
-      await ctx.storage.delete(image.storageId);
-    }
-    await ctx.db.delete(args.blogId);
-  },
-});
-
-export const update = mutation({
-  args: {
-    id: v.id("blogs"),
-    title: v.optional(v.string()),
-    content: v.optional(v.string()),
-    author: v.optional(v.string()),
-    published: v.optional(v.boolean()),
-    category:v.string(), 
-    images: v.optional(
-      v.array(
-        v.object({
-          url: v.string(),
-          storageId: v.id("_storage"),
-        })
-      )
-    ),
-  },
-  handler: async (ctx, args) => {
-    const { id, ...updateData } = args;
-    const existingBlog = await ctx.db.get(id);
-    if (!existingBlog) {
-      throw new Error("Blog not found");
-    }
-
-    // If new images are provided, delete old ones from storage
-    if (updateData.images) {
-      for (const oldImage of existingBlog.images) {
-        const imageStillExists = updateData.images.some(
-          (newImage) => newImage.storageId === oldImage.storageId
-        );
-        if (!imageStillExists) {
-          await ctx.storage.delete(oldImage.storageId);
-        }
-      }
-    }
-
-    await ctx.db.patch(id, updateData);
-  },
-});
-
-
-export const getBlog = query({
-  args: { id: v.id("blogs") },
-  handler: async (ctx, args) => {
-    const blog = await ctx.db.get(args.id);
-    if (!blog) {
-      throw new ConvexError("Blog not found");
-    }
-    return blog;
-  },
-});
-
-
-export const getBlogsNew = query({
+export const GetLimitedBlogs = query({
   args: {
     limit: v.number(),
     cursor: v.optional(v.id("blogs")),
@@ -194,4 +186,13 @@ export const getBlogsNew = query({
   },
 });
 
-// ... (other functions remain the same)
+export const GetBlogID = query({
+  args: { id: v.id("blogs") },
+  handler: async (ctx, args) => {
+    const blog = await ctx.db.get(args.id);
+    if (!blog) {
+      throw new ConvexError("Blog not found");
+    }
+    return blog;
+  },
+});

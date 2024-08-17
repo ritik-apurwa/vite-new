@@ -61,7 +61,7 @@ const CodeForm: React.FC<CodeControlProps> = ({ type, initialData }) => {
     }
   }, [getCode, form, type]);
 
-  const handleSubmit = async (values: CodeFormValues) => {
+  const handleSubmit = async (values: CodeFormValues): Promise<boolean> => {
     try {
       if (type === "create") {
         await createCode(values);
@@ -71,8 +71,10 @@ const CodeForm: React.FC<CodeControlProps> = ({ type, initialData }) => {
         await deleteCode({ codeId: initialData });
       }
       form.reset();
+      return true;
     } catch (error) {
       console.error(`Error ${type}ing code:`, error);
+      return false;
     }
   };
 
@@ -81,8 +83,16 @@ const CodeForm: React.FC<CodeControlProps> = ({ type, initialData }) => {
       type={type}
       buttonName="Code"
       formHeader={`${type.charAt(0).toUpperCase() + type.slice(1)} Code Component`}
-      onSubmit={form.handleSubmit(handleSubmit)}
-      onCancel={() => form.reset()}
+      isValid={form.formState.isValid} // Pass form validity
+      isSubmitting={form.formState.isSubmitting} // Pass submission state
+      onSubmit={async () => {
+        const isValid = await form.trigger();
+        if (!isValid) return false;
+        return await handleSubmit(form.getValues());
+      }}
+      onCancel={() => {
+        form.reset();
+      }}
     >
       <Form {...form}>
         <form className="space-y-4">
@@ -165,3 +175,6 @@ const CodeForm: React.FC<CodeControlProps> = ({ type, initialData }) => {
 };
 
 export default CodeForm;
+
+
+

@@ -1,13 +1,14 @@
-import { frontendSkills, mainSkills, SkillCardProps } from "@/assets/data";
+import { frontendSkills, SkillCardProps } from "@/assets/data";
 import AutoScrollComponent from "@/components/providers/auto-scroll/auto-scroll-com";
 
-const SkillCard = ({ img, title, description }: SkillCardProps) => (
-  <div className="m-2 p-4 shadow rounded">
+const SkillCard = ({ img, title }: SkillCardProps) => (
+  <div className="m-2 p-10 shadow rounded">
     <div className="flex w-full items-center justify-center overflow-hidden">
-      <img src={img} className="object-cover size-16" alt={title} />
+      <img src={img} className="object-cover size-24" alt={title} />
     </div>
-    <h3 className="text-lg text-center font-bold">{title}</h3>
-    <p className="text-center text-xs">{description}</p>
+    <h3 className="text-lg text-center mt-4 text-gray-700 font-bold">
+      {title}
+    </h3>
   </div>
 );
 
@@ -24,7 +25,7 @@ const Skills = () => {
           </p>
         </div>
       </div>
-      <div id="add-blur" className=" w-screen max-w-2xl mx-auto">
+      <div id="add-blur" className=" w-screen max-w-7xl container mx-auto">
         <AutoScrollComponent
           slides={frontendSkills.map((skill) => (
             <SkillCard
@@ -37,19 +38,6 @@ const Skills = () => {
           ))}
           direction="forward"
           options={{ startIndex: 1 }}
-        />
-        <AutoScrollComponent
-          slides={mainSkills.map((skill) => (
-            <SkillCard
-              key={skill.id}
-              id={skill.id}
-              title={skill.title}
-              img={skill.img}
-              description={skill.description}
-            />
-          ))}
-          direction="backward"
-          options={{ startIndex: 1, axis: "x" }}
         />
       </div>
     </section>

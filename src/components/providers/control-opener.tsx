@@ -15,14 +15,17 @@ import { IoCreateOutline } from "react-icons/io5";
 import { LiaEdit } from "react-icons/lia";
 import { AiOutlineDelete } from "react-icons/ai";
 
+// Updated interface to include isValid and isSubmitting props
 interface OpenFormButtonProps {
   type?: "create" | "update" | "delete";
   formHeader: string;
   buttonName?: string;
   children: React.ReactNode;
   className?: string;
-  onSubmit: () => void;
+  onSubmit: () => Promise<boolean>;
   onCancel: () => void;
+  isValid: boolean; // New prop to indicate form validity
+  isSubmitting: boolean; // New prop to indicate form submission state
 }
 
 const OpenFormButton: React.FC<OpenFormButtonProps> = ({
@@ -33,14 +36,16 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
   className,
   onSubmit,
   onCancel,
+  isValid,
+  isSubmitting,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    onSubmit();
-    setIsOpen(false);
-    setIsSubmitting(false);
+  const handleSubmit = async () => {
+    const success = await onSubmit();
+    if (success) {
+      setIsOpen(false);
+    }
   };
 
   const handleCancel = () => {
@@ -83,7 +88,6 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
             variant="outline"
             onClick={() => setIsOpen(true)}
           >
-            {" "}
             <AiOutlineDelete size={18} />
             <span className="hidden md:flex items-center justify-center">
               Delete {buttonName}
@@ -91,8 +95,10 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
           </Button>
         );
       default:
+        return null;
     }
   };
+
   const getSubmitButton = () => {
     switch (type) {
       case "create":
@@ -117,6 +123,7 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
           </>
         );
       default:
+        return null;
     }
   };
 
@@ -146,12 +153,12 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
           <AlertDialogDescription>{getDescription()}</AlertDialogDescription>
         )}
         {children}
-        <AlertDialogFooter className="flex flex-row  gap-x-4 items-center h-14">
+        <AlertDialogFooter className="flex flex-row gap-x-4 items-center h-14">
           <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             type="submit"
-            disabled={isSubmitting}
-            className="flex flex-row  gap-x-2"
+            disabled={(type !== "delete" && !isValid) || isSubmitting}  // Disable button based on form validity and submission state
+            className="flex flex-row gap-x-2"
             onClick={handleSubmit}
           >
             {getSubmitButton()}

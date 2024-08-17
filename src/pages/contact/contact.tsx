@@ -1,34 +1,23 @@
-import { frontendSkills, SkillCardProps } from "@/assets/data";
-import FadeImageCarousel from "@/components/providers/auto-scroll/fade-image-carousel";
+import ContactForm from "./contact-form";
 
-const ContactPage = () => {
-  const SkillCard = ({ img }: SkillCardProps) => {
-    return (
-      <div className="flex justify-center items-center h-full w-full">
-        <img src={img} className="w-full object-cover h-auto max-h-40" alt="" />
-      </div>
-    );
-  };
 
+const Contact = () => {
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center space-y-8">
-      <div className="w-full max-w-4xl">
-        <FadeImageCarousel
-          slides={frontendSkills.map((item) => (
-            <SkillCard key={item.id} {...item} />
-          ))}
-          options={{ startIndex: 1 }}
-        />
+    <div className="grid grid-rows-2 grid-cols-none lg:grid-cols-2 lg:grid-rows-none max-w-7xl mx-auto min-h-[80vh]">
+      <div className="flex justify-center  items-center">
+        <h1 className="t-text text-7xl noto-sans  capitalize">
+          <span className="text-white font-bold">Ready to</span> <br />
+          <span>Make e'm</span> <br />
+          <span className="text-white font-bold">
+            Say wow <span>?</span>
+          </span>
+        </h1>
       </div>
-      <div className="text-center max-w-2xl">
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur
-          vitae debitis est sit doloremque harum, dolore facilis minus.
-          Molestiae, ipsam.
-        </p>
+      <div className="h-full w-full flex justify-center items-center">
+        <ContactForm />
       </div>
     </div>
   );
 };
 
-export default ContactPage;
+export default Contact;

@@ -5,9 +5,9 @@ import { useQuery } from "convex/react";
 import { Input } from "@/components/ui/input";
 import BlogCard from "@/pages/blogs/blog-card";
 import { Filter, Search } from "@/assets/icons";
-import BlogForm from "@/components/providers/blog-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import BlogForm from "@/components/providers/blog-form";
 
 // Debounce hook
 const useDebounce = <T,>(value: T, delay = 500): T => {
@@ -108,7 +108,7 @@ const Searchbar: React.FC = () => {
 const Blogs: React.FC = () => {
   const [searchParams] = useSearchParams();
   const search = searchParams.get("search") || "";
-  const blogsData = useQuery(api.blogs.getBlogBySearch, { search });
+  const blogsData = useQuery(api.blogs.SearchBlogsQuery, { search });
 
   return (
     <div className="flex flex-col gap-10 py-10">

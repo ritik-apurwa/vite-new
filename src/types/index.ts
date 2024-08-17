@@ -1,3 +1,4 @@
+import { Id } from "@convex/_generated/dataModel";
 import { z } from "zod";
 
 export type languageTypes =
@@ -60,3 +61,15 @@ export const blogSchemaZod = z.object({
   published: z.boolean(),
 });
 export type BlogFormData = z.infer<typeof blogSchemaZod>;
+
+export const imageDataSchemaZod = z.object({
+  title: z.string().min(1, "Title is required"),
+  images: z.array(
+    z.object({
+      imageUrl: z.string().url("Invalid image URL"),
+      storageId: z.custom<Id<"_storage">>()
+    })
+  ),
+});
+
+export type ImageDataType = z.infer<typeof imageDataSchemaZod>;
