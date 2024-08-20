@@ -12,25 +12,28 @@ const BlogCard = ({
   content,
   title,
   category,
-  images,
+  imageId,
 }: BlogTypes) => {
   const Images = ({ img }: { img: string }) => {
     return (
       <div className="flex justify-center py-4 items-center h-full w-full">
-      <img src={img} className="w-auto object-cover h-60" alt="" />
-    </div>
+        <img src={img} className="w-auto object-cover h-60" alt="" />
+      </div>
     );
   };
 
   return (
     <div className="max-w-2xl mx-auto border-2 shadow-lg rounded-lg overflow-hidden">
       <div className="relative w-full h-full">
-        <FadeImageCarousel
-          slides={images.map((img) => (
-            <Images key={img.url} img={img.url} />
-          ))}
-          options={{ startIndex: 0 }}
-        />
+        {imageId.length > 0 && (
+          <FadeImageCarousel
+            slides={imageId.map((img) => (
+              <Images key={img.url} img={img.url} />
+            ))}
+            options={{ startIndex: 0 }}
+          />
+        )}
+
         <span className="absolute top-2 right-2 px-2 py-1 bg-teal-500 text-white text-xs rounded-md">
           {category}
         </span>

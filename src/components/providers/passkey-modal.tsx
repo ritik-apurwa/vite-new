@@ -50,7 +50,10 @@ export const PasskeyModal = () => {
   ) => {
     e.preventDefault();
 
-    if (passkey === import.meta.env.VITE_ADMIN_PASSKEY && email === import.meta.env.VITE_ADMIN_EMAIL) {
+    if (
+      passkey === import.meta.env.VITE_ADMIN_PASSKEY &&
+      email === import.meta.env.VITE_ADMIN_EMAIL
+    ) {
       const encryptedKey = encryptKey(passkey);
 
       localStorage.setItem("accessKey", encryptedKey);
@@ -63,13 +66,18 @@ export const PasskeyModal = () => {
     }
   };
 
+  const InputIndex = [0, 1, 2, 3, 4, 5];
+
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogContent className="bg-white  rounded-lg shadow-lg p-6 max-w-md mx-auto">
+      <AlertDialogContent className="rounded-lg shadow-lg p-6 max-w-md mx-auto">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-start justify-between text-xl font-semibold text-gray-900">
+          <AlertDialogTitle className="flex items-start justify-between text-xl font-semibold ">
             Admin Access Verification
-            <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 transition-colors">
+            <button
+              onClick={closeModal}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
               <X size={24} />
             </button>
           </AlertDialogTitle>
@@ -79,7 +87,7 @@ export const PasskeyModal = () => {
         </AlertDialogHeader>
         <div className="flex flex-col gap-4 mt-4">
           <Input
-            className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border  rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             type="email"
             placeholder="Enter your email"
             value={email}
@@ -92,38 +100,18 @@ export const PasskeyModal = () => {
           >
             <div className="flex justify-center items-center w-full flex-col gap-4">
               <InputOTPGroup className="max-w-sm grid grid-cols-6 gap-2">
-                <InputOTPSlot
-                  className="shad-otp-slot bg-gray-100 border border-gray-300 rounded-lg p-2 text-center text-lg font-semibold"
-                  index={0}
-                />
-                <InputOTPSlot
-                  className="shad-otp-slot bg-gray-100 border border-gray-300 rounded-lg p-2 text-center text-lg font-semibold"
-                  index={1}
-                />
-                <InputOTPSlot
-                  className="shad-otp-slot bg-gray-100 border border-gray-300 rounded-lg p-2 text-center text-lg font-semibold"
-                  index={2}
-                />
-                <InputOTPSlot
-                  className="shad-otp-slot bg-gray-100 border border-gray-300 rounded-lg p-2 text-center text-lg font-semibold"
-                  index={3}
-                />
-                <InputOTPSlot
-                  className="shad-otp-slot bg-gray-100 border border-gray-300 rounded-lg p-2 text-center text-lg font-semibold"
-                  index={4}
-                />
-                <InputOTPSlot
-                  className="shad-otp-slot bg-gray-100 border border-gray-300 rounded-lg p-2 text-center text-lg font-semibold"
-                  index={5}
-                />
+                {InputIndex.map((index) => (
+                  <InputOTPSlot
+                    className="shad-otp-slot  rounded-lg p-2 text-center text-lg font-semibold"
+                    index={index}
+                  />
+                ))}
               </InputOTPGroup>
             </div>
           </InputOTP>
 
           {error && (
-            <p className="text-red-600 text-sm mt-2 text-center">
-              {error}
-            </p>
+            <p className="text-red-600 text-sm mt-2 text-center">{error}</p>
           )}
         </div>
         <AlertDialogFooter className="mt-6">

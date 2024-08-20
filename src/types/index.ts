@@ -52,7 +52,7 @@ export const blogSchemaZod = z.object({
   category: z
     .string()
     .min(1, "Category must be selected"),
-  images: z.array(
+  imageId: z.array(
     z.object({
       url: z.string().url("Invalid image URL"),
       storageId: z.string()
@@ -61,15 +61,3 @@ export const blogSchemaZod = z.object({
   published: z.boolean(),
 });
 export type BlogFormData = z.infer<typeof blogSchemaZod>;
-
-export const imageDataSchemaZod = z.object({
-  title: z.string().min(1, "Title is required"),
-  images: z.array(
-    z.object({
-      imageUrl: z.string().url("Invalid image URL"),
-      storageId: z.custom<Id<"_storage">>()
-    })
-  ),
-});
-
-export type ImageDataType = z.infer<typeof imageDataSchemaZod>;

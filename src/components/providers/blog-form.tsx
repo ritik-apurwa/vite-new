@@ -9,7 +9,7 @@ import CustomForm, { FormType } from "@/components/providers/custom-form";
 import { BlogFormData, blogSchemaZod } from "@/types";
 import OpenFormButton from "./control-opener";
 import { SelectItem } from "../ui/select";
-import UploadImage from "./uploadImage/upload-image";
+import UploadImage, { ImageData } from "./uploadImage/upload-image";
 
 interface BlogControlProps {
   initialData?: Id<"blogs">;
@@ -17,10 +17,10 @@ interface BlogControlProps {
 }
 
 const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
-  const [, setIsSubmitting] = useState(false);
-  const [images, setImages] = useState<
-    { url: string; storageId: Id<"_storage"> }[]
-  >([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [initialImages, setInitialImages] = useState<ImageData[]>([]);
+  const [newlyAddedImages, setNewlyAddedImages] = useState<ImageData[]>([]);
 
   const form = useForm<BlogFormData>({
     resolver: zodResolver(blogSchemaZod),
@@ -29,6 +29,7 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
       content: "",
       author: "",
       category: "",
+      imageId: [],
       published: false,
     },
   });
@@ -40,11 +41,13 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
     api.blogs.GetBlogID,
     initialData ? { id: initialData } : "skip"
   );
+  const deleteUnusedImages = useMutation(api.blogs.DeleteUnusedImages);
 
   useEffect(() => {
     if (getBlog && type !== "create") {
       form.reset(getBlog);
-      setImages(getBlog.images);
+      setImages(getBlog.imageId);
+      setInitialImages(getBlog.imageId);
     }
   }, [getBlog, form, type]);
 
@@ -52,21 +55,62 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
     setIsSubmitting(true);
     try {
       if (type === "create") {
-        await createBlog({ ...values, images });
+        await createBlog({ ...values, imageId: images });
       } else if (type === "update" && initialData) {
-        await updateBlog({ id: initialData, ...values, images });
+        const { _id, _creationTime, ...updateData } = values as any;
+        await updateBlog({ id: initialData, ...updateData, imageId: images });
       } else if (type === "delete" && initialData) {
         await deleteBlog({ id: initialData });
       }
       form.reset();
       setImages([]);
-      return true; // Indicate successful submission
+      setInitialImages([]);
+      setNewlyAddedImages([]);
+      return true;
     } catch (error) {
       console.error(`Error ${type}ing blog:`, error);
-      return false; // Indicate failed submission
+      return false;
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCancel = async () => {
+    if (type === "create") {
+      // Delete all uploaded images for create operation
+      if (images.length > 0) {
+        await deleteUnusedImages({
+          imageIds: images.map((img) => img.storageId),
+        });
+      }
+      setImages([]);
+    } else if (type === "update") {
+      // For update, delete only newly added images
+      if (newlyAddedImages.length > 0) {
+        await deleteUnusedImages({
+          imageIds: newlyAddedImages.map((img) => img.storageId),
+        });
+      }
+      setImages(initialImages);
+    }
+    setNewlyAddedImages([]);
+    form.reset();
+  };
+
+
+  const handleImageDelete = async (deletedImage: ImageData) => {
+    if (type === "update") {
+      // Remove from newlyAddedImages if it's there
+      setNewlyAddedImages(
+        newlyAddedImages.filter(
+          (img) => img.storageId !== deletedImage.storageId
+        )
+      );
+    }
+    // Remove from images
+    setImages(images.filter((img) => img.storageId !== deletedImage.storageId));
+    // Delete the image from storage
+    await deleteUnusedImages({ imageIds: [deletedImage.storageId] });
   };
 
   return (
@@ -74,17 +118,14 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
       type={type}
       buttonName="Blog"
       formHeader="Blog Form"
-      isValid={form.formState.isValid} // Pass form validity
-      isSubmitting={form.formState.isSubmitting} // Pass submission state
+      isValid={form.formState.isValid}
+      isSubmitting={isSubmitting}
       onSubmit={async () => {
         const isValid = await form.trigger();
         if (!isValid) return false;
         return handleSubmit(form.getValues());
       }}
-      onCancel={() => {
-        form.reset();
-        setImages([]);
-      }}
+      onCancel={handleCancel}
     >
       <Form {...form}>
         <form className="space-y-4">
@@ -118,6 +159,7 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
                 placeholder="Select Category"
                 formType={FormType.SELECT}
               >
+                <SelectItem value="Personal">Personal</SelectItem>
                 <SelectItem value="javascript">JavaScript</SelectItem>
                 <SelectItem value="typescript">TypeScript</SelectItem>
                 <SelectItem value="python">Python</SelectItem>
@@ -130,7 +172,11 @@ const BlogForm: React.FC<BlogControlProps> = ({ type, initialData }) => {
                 label="Published"
                 formType={FormType.CHECKBOX}
               />
-              <UploadImage initialImages={images} onImageUpdate={setImages} />
+              <UploadImage
+                images={images}
+                setImages={setImages}
+                onDelete={handleImageDelete}
+              />
             </>
           )}
         </form>

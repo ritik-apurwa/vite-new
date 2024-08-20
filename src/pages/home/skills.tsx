@@ -4,7 +4,7 @@ import AutoScrollComponent from "@/components/providers/auto-scroll/auto-scroll-
 const SkillCard = ({ img, title }: SkillCardProps) => (
   <div className="m-2 p-10 shadow rounded">
     <div className="flex w-full items-center justify-center overflow-hidden">
-      <img src={img} className="object-cover size-24" alt={title} />
+      <img src={img} className="object-cover  size-24" alt={title} />
     </div>
     <h3 className="text-lg text-center mt-4 text-gray-700 font-bold">
       {title}

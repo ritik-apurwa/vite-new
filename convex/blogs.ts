@@ -46,13 +46,13 @@ export const CreateBlog = mutation({
     content: v.string(),
     author: v.string(),
     category: v.string(),
-    published: v.boolean(),
-    images: v.array(
+    imageId: v.array(
       v.object({
         url: v.string(),
         storageId: v.id("_storage"),
       })
     ),
+    published: v.boolean(),
   },
   handler: async (ctx, args) => {
     const newBlog = await ctx.db.insert("blogs", args);
@@ -67,13 +67,13 @@ export const UpdateBlog = mutation({
     content: v.string(),
     author: v.string(),
     category: v.string(),
-    published: v.boolean(),
-    images: v.array(
+    imageId: v.array(
       v.object({
         url: v.string(),
         storageId: v.id("_storage"),
       })
     ),
+    published: v.boolean(),
   },
   handler: async (ctx, args) => {
     const { id, ...updateData } = args;
@@ -82,18 +82,11 @@ export const UpdateBlog = mutation({
       throw new Error("Blog not found");
     }
 
-    // Delete removed images from storage
-    const removedImages = existingBlog.images.filter(
-      (oldImage) =>
-        !args.images.some(
-          (newImage) => newImage.storageId === oldImage.storageId
-        )
-    );
-    for (const image of removedImages) {
-      await ctx.storage.delete(image.storageId);
-    }
+    // Remove any fields that are not in the schema
+    const { _creationTime, _id, ...cleanUpdateData } = updateData as any;
 
-    await ctx.db.replace(id, updateData);
+    await ctx.db.patch(id, cleanUpdateData);
+    return await ctx.db.get(id);
   },
 });
 
@@ -108,55 +101,58 @@ export const DeleteBlog = mutation({
     }
 
     // Delete associated images from storage
-    for (const image of blog.images) {
+    for (const image of blog.imageId) {
       await ctx.storage.delete(image.storageId);
     }
 
     await ctx.db.delete(args.id);
   },
 });
-
-export const DeleteBlogImage = mutation({
-  args: { storageId: v.id("_storage") },
-  handler: async (ctx, args) => {
-    await ctx.storage.delete(args.storageId);
-  },
-});
-
 export const SearchBlogsQuery = query({
   args: {
     search: v.string(),
+    author: v.optional(v.string()),
+    category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (args.search === "") {
-      return await ctx.db.query("blogs").order("desc").collect();
-    }
-    const authorSearch = await ctx.db
-      .query("blogs")
-      .withSearchIndex("search_author", (q) => q.search("author", args.search))
-      .take(10);
+    let queryBuilder = ctx.db.query("blogs");
 
-    if (authorSearch.length > 0) {
-      return authorSearch;
+    if (args.author) {
+      queryBuilder = queryBuilder.filter((q) => q.eq(q.field("author"), args.author));
+    }
+    if (args.category) {
+      queryBuilder = queryBuilder.filter((q) => q.eq(q.field("category"), args.category));
     }
 
-    const titleSearch = await ctx.db
-      .query("blogs")
-      .withSearchIndex("search_title", (q) => q.search("title", args.search))
-      .take(10);
+    if (args.search !== "") {
+      // Use the appropriate search index based on your schema
+      const authorResults = await queryBuilder
+        .withSearchIndex("search_author", (q) => q.search("author", args.search))
+        .collect();
 
-    if (titleSearch.length > 0) {
-      return titleSearch;
+      if (authorResults.length > 0) {
+        return authorResults;
+      }
+
+      const titleResults = await queryBuilder
+        .withSearchIndex("search_title", (q) => q.search("title", args.search))
+        .collect();
+
+      if (titleResults.length > 0) {
+        return titleResults;
+      }
+
+      const contentResults = await queryBuilder
+        .withSearchIndex("search_body", (q) => q.search("content", args.search))
+        .collect();
+
+      return contentResults;
     }
-    return await ctx.db
-      .query("blogs")
-      .withSearchIndex("search_body", (q) =>
-        q.search("content" || "podcastTitle", args.search)
-      )
-      .take(10);
+
+    // If no search term, return all results
+    return await queryBuilder.collect();
   },
 });
-
 export const GetLimitedBlogs = query({
   args: {
     limit: v.number(),
@@ -194,5 +190,42 @@ export const GetBlogID = query({
       throw new ConvexError("Blog not found");
     }
     return blog;
+  },
+});
+
+export const GetUrl = mutation({
+  args: {
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.storageId);
+  },
+});
+
+
+export const DeleteUnusedImages = mutation({
+  args: { imageIds: v.array(v.id("_storage")) },
+  handler: async (ctx, args) => {
+    for (const imageId of args.imageIds) {
+      await ctx.storage.delete(imageId);
+    }
+  },
+});
+
+export const GetUniqueAuthors = query({
+  args: {},
+  handler: async (ctx) => {
+    const blogs = await ctx.db.query("blogs").collect();
+    const uniqueAuthors = Array.from(new Set(blogs.map(blog => blog.author)));
+    return uniqueAuthors;
+  },
+});
+
+export const GetUniqueCategories = query({
+  args: {},
+  handler: async (ctx) => {
+    const blogs = await ctx.db.query("blogs").collect();
+    const uniqueCategories = Array.from(new Set(blogs.map(blog => blog.category)));
+    return uniqueCategories;
   },
 });

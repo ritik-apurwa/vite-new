@@ -9,7 +9,7 @@ const Home = () => {
     <>
       <Intro />
       <UiShowCase />
-      <Skills/>
+      <Skills />
     </>
   );
 };
@@ -29,12 +29,12 @@ const Intro = () => {
         </p>
       </div>
       <div className="w-full mx-auto gap-4 flex justify-center flex-col">
-        <div className="flex flex-row justify-center gap-x-2">
+        <div className="flex flex-col justify-center gap-x-2">
           <p className="text-center underline text-gray-600 dark:text-gray-400">
             Get Started for Free Or Hire me{" "}
           </p>
 
-          <Link className="underline" to="/admin">
+          <Link className="underline underline-offset-2  mx-auto" to="/admin">
             Admin
           </Link>
         </div>
@@ -43,7 +43,7 @@ const Intro = () => {
             <SignInButton />
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link to="/about">Know More</Link>
+            <Link to="/contact">Know More</Link>
           </Button>
         </div>
       </div>

@@ -104,21 +104,21 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
       case "create":
         return (
           <>
-            <IoCreateOutline className="" size={18} />
+            <IoCreateOutline className="" size={16} />
             Create {buttonName}
           </>
         );
       case "update":
         return (
           <>
-            <LiaEdit size={18} />
+            <LiaEdit size={16} />
             Update {buttonName}
           </>
         );
       case "delete":
         return (
           <>
-            <AiOutlineDelete size={18} />
+            <AiOutlineDelete size={16} />
             Delete {buttonName}
           </>
         );
@@ -144,7 +144,7 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>{getOpenButton()}</AlertDialogTrigger>
       <AlertDialogContent
-        className={`container mx-auto max-w-5xl max-h-screen overflow-y-auto no-scrollbar ${className || ""}`}
+        className={`container ${type === "delete" ? "max-w-sm w-96" : ""} mx-auto max-w-5xl max-h-screen overflow-y-auto no-scrollbar ${className || ""}`}
       >
         <AlertDialogHeader>
           <AlertDialogTitle>{formHeader}</AlertDialogTitle>
@@ -157,8 +157,8 @@ const OpenFormButton: React.FC<OpenFormButtonProps> = ({
           <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             type="submit"
-            disabled={(type !== "delete" && !isValid) || isSubmitting}  // Disable button based on form validity and submission state
-            className="flex flex-row gap-x-2"
+            disabled={(type !== "delete" && !isValid) || isSubmitting} // Disable button based on form validity and submission state
+            className={`${type === "delete" ? "bg-red-500/80 hover:bg-red-500 focus:scale-95" : " bg-teal-500"} flex flex-row gap-x-2 items-center`}
             onClick={handleSubmit}
           >
             {getSubmitButton()}

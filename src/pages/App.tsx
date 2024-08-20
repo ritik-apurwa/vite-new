@@ -1,6 +1,5 @@
 import Navbar from "@/components/page-components/navbar/navbar";
 import { Route } from "react-router-dom";
-import About from "./about/about";
 import Snippets from "./snippets/snippets";
 import Blogs from "./blogs/blogs";
 import Home from "./home/home";
@@ -10,6 +9,7 @@ import { PasskeyModal } from "@/components/providers/passkey-modal"; // Ensure t
 import Admin from "./admin/admin";
 import { Toaster } from "@/components/ui/toaster";
 import { Routes } from "react-router-dom";
+import Footer from "@/components/page-components/footer/footer";
 
 function App() {
   return (
@@ -19,7 +19,6 @@ function App() {
         <section className="">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
             <Route path="/snippets" element={<Snippets />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/contact" element={<ContactPage />} />
@@ -29,6 +28,7 @@ function App() {
         {/* Render PasskeyModal at the top level */}
         <PasskeyModal />
         <Toaster />
+        <Footer/>
       </section>
     </ThemeProvider>
   );

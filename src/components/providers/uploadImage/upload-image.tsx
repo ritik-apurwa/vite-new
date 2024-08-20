@@ -1,169 +1,137 @@
-import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, X, Loader2 } from "lucide-react";
-import { useUploadFiles } from "@xixixao/uploadstuff/react";
-import { useMutation } from "convex/react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
-import { useToast } from "@/components/ui/use-toast";
+import { useUploadFiles } from "@xixixao/uploadstuff/react";
+import { useMutation } from "convex/react";
+import { Loader, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
 
-interface ImageData {
+export interface ImageData {
   url: string;
   storageId: Id<"_storage">;
 }
 
-interface UploadImageProps {
-  initialImages?: ImageData[];
-  onImageUpdate: (images: ImageData[]) => void;
+export interface UploadImageProps {
+  images: ImageData[];
+  setImages: (newImages: ImageData[]) => void;
+  onDelete: (deletedImage: ImageData) => Promise<void>;
 }
 
-const UploadImage: React.FC<UploadImageProps> = ({
-  initialImages = [],
-  onImageUpdate,
-}) => {
-  const [images, setImages] = useState<ImageData[]>(initialImages);
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+export const UploadImage = ({
+  images,
+  setImages,
+  onDelete,
+}: UploadImageProps) => {
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const imageRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-
   const generateUploadUrl = useMutation(api.files.GenerateUploadUrl);
   const { startUpload } = useUploadFiles(generateUploadUrl);
-  const getImageUrl = useMutation(api.files.GenerateUploadUrl);
-  const deleteImage = useMutation(api.files.DeleteFileFromStorage);
+  const getImageUrl = useMutation(api.blogs.GetUrl);
 
-  const handleLocalImageClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent the default action
-    e.stopPropagation(); // Stop the event from bubbling up
-    if (fileInputRef.current) fileInputRef.current.click();
-  };
+  const handleImage = async (blob: Blob, fileName: string) => {
+    setIsImageLoading(true);
 
-  const handleLocalImageChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    e.preventDefault(); // Prevent the default action
-    e.stopPropagation(); // Stop the event from bubbling up
-    
-    if (e.target.files && e.target.files.length > 0) {
-      setIsLoading(true);
-      const files = Array.from(e.target.files);
-      let totalProgress = 0;
-      let newImages: ImageData[] = [];
+    try {
+      const file = new File([blob], fileName, { type: "image/png" });
+      const uploaded = await startUpload([file]);
+      const storageId = (uploaded[0].response as any).storageId;
+      const imageUrl = await getImageUrl({ storageId });
 
-      try {
-        const uploadPromises = files.map((file) =>
-          startUpload([file])
-            .then(async (uploaded) => {
-              const storageId = (uploaded[0].response as any)
-                .storageId as string;
-              const url = await getImageUrl({});
-              return {
-                url,
-                storageId,
-              };
-            })
-            .finally(() => {
-              totalProgress += (1 / files.length) * 100;
-              setUploadProgress(totalProgress);
-            })
-        );
-
-        const results = await Promise.all(uploadPromises);
-        for (const result of results) {
-          if (result.url) {
-            newImages.push({
-              url: result.url,
-              storageId: result.storageId,
-            });
-          }
-        }
-
-        const updatedImages = [...images, ...newImages];
-        setImages(updatedImages);
-        onImageUpdate(updatedImages);
-
-        toast({ title: "Images uploaded successfully" });
-      } catch (error) {
-        console.error("Error uploading images:", error);
-        toast({ title: "Error uploading images", variant: "destructive" });
-      } finally {
-        setIsLoading(false);
-        setUploadProgress(0);
-      }
+      const newImage = { url: imageUrl!, storageId };
+      setImages([...images, newImage]);
+      setIsImageLoading(false);
+      toast({
+        title: "Image uploaded successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      toast({ title: "Error uploading image", variant: "destructive" });
     }
   };
 
-  const handleDeleteImage = async (storageId: string, e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent the default action
-    e.stopPropagation(); // Stop the event from bubbling up
-    
+  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
     try {
-      await deleteImage({ storageId: storageId as Id<"_storage"> });
-      const updatedImages = images.filter((img) => img.storageId !== storageId);
-      setImages(updatedImages);
-      onImageUpdate(updatedImages);
-      toast({ title: "Image deleted successfully" });
+      const files = e.target.files;
+      if (!files) return;
+      const file = files[0];
+      const blob = await file.arrayBuffer().then((ab) => new Blob([ab]));
+
+      handleImage(blob, file.name);
     } catch (error) {
-      console.error("Error deleting image:", error);
+      console.log(error);
+      toast({ title: "Error uploading image", variant: "destructive" });
+    }
+  };
+
+  const deleteImage = async (image: ImageData) => {
+    try {
+      await onDelete(image);
+      toast({
+        title: "Image deleted successfully",
+      });
+    } catch (error) {
       toast({ title: "Error deleting image", variant: "destructive" });
     }
   };
 
+  const handleUploadClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    imageRef.current?.click();
+  };
+
   return (
-    <section className="p-4" onClick={(e) => e.stopPropagation()}>
-      <div className="flex justify-center mb-6">
-        <Button
-          onClick={handleLocalImageClick}
-          className="flex flex-col items-center justify-center space-y-2 size-24 p-4"
-        >
-          <UploadCloud size={24} />
-          <span>Computer</span>
-        </Button>
-      </div>
-
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleLocalImageChange}
-        className="hidden"
-        multiple
-        accept="image/*"
-      />
-
-      <div className="mt-6 max-w-7xl mx-auto">
-        <h3 className="text-lg font-semibold mb-4">Uploaded Images</h3>
-        <div className="flex flex-row gap-4 flex-wrap">
-          {images.map((image) => (
-            <div
-              key={image.storageId.toString()}
-              className="relative size-24 group"
-            >
+    <>
+      <div className="flex flex-row gap-x-5 justify-between">
+        <div className=" flex flex-row border-2 border-red-400 px-4 gap-x-2">
+          {images.map((image, index) => (
+            <div key={index} className="image-item">
               <img
                 src={image.url}
-                alt="Uploaded"
-                className="size-full object-cover rounded"
+                width={200}
+                height={200}
+                className="mt-5 size-24"
+                alt={`thumbnail-${index}`}
               />
               <Button
-                className="absolute top-2 size-8 right-2 p-1 bg-red-500/60 hover:bg-red-600/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => handleDeleteImage(image.storageId, e)}
+                variant="outline"
+                size="lg"
+                onClick={() => deleteImage(image)}
               >
-                <X size={16} />
+                <X />
               </Button>
             </div>
           ))}
         </div>
-      </div>
 
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="border-4 border-dotted p-4 rounded-lg flex flex-col items-center">
-            <Loader2 size={24} className="animate-spin text-blue-500 mb-2" />
-            <span className="text-sm font-medium">Uploading...</span>
-            <span className="text-xs">{uploadProgress.toFixed(2)}%</span>
-          </div>
+        <div className="h-auto w-full flex justify-start items-center ">
+          <Input
+            type="file"
+            className="hidden"
+            ref={imageRef}
+            onChange={(e) => uploadImage(e)}
+          />
+          <button className="h-full w-48 items-center border-2 border-dotted border-spacing-8 flex justify-center" onClick={handleUploadClick}>
+            {!isImageLoading ? (
+              <Upload />
+            ) : (
+              <div className="text-16 flex-center font-medium text-white-1">
+                <Loader
+                  size={20}
+                  className="animate-spin text-teal-400 font-bold ml-2"
+                />
+                Uploading
+              </div>
+            )}
+          </button>
         </div>
-      )}
-    </section>
+      </div>
+    </>
   );
 };
 

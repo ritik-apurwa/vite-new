@@ -6,7 +6,7 @@ const codes = defineTable({
     v.object({
       fileName: v.string(),
       code: v.string(),
-      language: v.string(), // Language type (CSS, TypeScript, React, etc.)
+      language: v.string(),
     })
   ),
   title: v.string(),
@@ -18,7 +18,7 @@ const blogs = defineTable({
   content: v.string(),
   author: v.string(),
   category: v.string(),
-  images: v.array(
+  imageId: v.array(
     v.object({
       url: v.string(),
       storageId: v.id("_storage"),
@@ -31,7 +31,6 @@ const contactSchema = defineTable({
   name: v.string(),
   email: v.string(),
   message: v.string(),
-  // Store the timestamp as an ISO string
 });
 
 export default defineSchema({
@@ -41,7 +40,7 @@ export default defineSchema({
     image: v.string(),
     tokenIdentifier: v.string(),
     isAdmin: v.boolean(),
-    lastSignIn: v.string(), // Store the last sign-in time as an ISO string
+    lastSignIn: v.string(),
   })
     .index("by_tokenIdentifier", ["tokenIdentifier"])
     .index("by_email", ["email"]),

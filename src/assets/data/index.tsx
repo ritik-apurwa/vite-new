@@ -83,3 +83,25 @@ export const frontendSkills: SkillCardProps[] = [
 ];
 
 
+import { IconType } from "react-icons";
+import { FaCodeCommit } from "react-icons/fa6";
+import { MdHomeMax } from "react-icons/md";
+import { PiContactlessPaymentBold } from "react-icons/pi";
+import { TbLogicNand } from "react-icons/tb";
+
+
+
+
+export interface NavLinks {
+    id: number;
+    label: string;
+    path: string;
+    icon: IconType;
+  }
+  
+export const navLinks: NavLinks[] = [
+    { id: 1, label: "Home", path: "/", icon: MdHomeMax },
+    { id: 3, label: "Snippets", path: "/snippets", icon: FaCodeCommit },
+    { id: 4, label: "Blog", path: "/blogs", icon: TbLogicNand },
+    { id: 5, label: "Contact", path: "/contact", icon: PiContactlessPaymentBold },
+  ];
