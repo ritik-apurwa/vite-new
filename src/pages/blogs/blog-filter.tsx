@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Command,
-  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -40,7 +39,7 @@ const BlogFilter: React.FC<BlogFilterProps> = ({ onFilterChange }) => {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button className="gap-x-2" size="sm" variant="outline">
-          <Filter  />
+          <Filter />
           Filter
         </Button>
       </AlertDialogTrigger>
@@ -77,10 +76,12 @@ const BlogFilter: React.FC<BlogFilterProps> = ({ onFilterChange }) => {
           </Command>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => {
-            setSelectedAuthor(null);
-            setSelectedCategory(null);
-          }}>
+          <AlertDialogCancel
+            onClick={() => {
+              setSelectedAuthor(null);
+              setSelectedCategory(null);
+            }}
+          >
             Clear
           </AlertDialogCancel>
           <AlertDialogAction onClick={handleApply}>Apply</AlertDialogAction>

@@ -1,4 +1,3 @@
-import { Id } from "@convex/_generated/dataModel";
 import { z } from "zod";
 
 export type languageTypes =

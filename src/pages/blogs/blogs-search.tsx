@@ -34,9 +34,4 @@ export const BlogSearchInput: React.FC = () => {
     );
   };
 
-  const EmptyState: React.FC<{ title: string }> = ({ title }) => (
-    <div className="text-center py-10">
-      <h2 className="text-xl font-semibold text-gray-600">{title}</h2>
-    </div>
-  );
-  
+ 
